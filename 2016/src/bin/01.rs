@@ -122,11 +122,11 @@ where
 fn main() -> anyhow::Result<()> {
     let steps: Vec<Step> = parse_each_split("data/01.input", ", ")?;
 
-    let hq_location_1 = find_destination(&steps);
-    println!("Part 1: {}", hq_location_1.distance());
+    let hq_location1 = find_destination(&steps);
+    println!("Part 1: {}", hq_location1.distance());
 
-    let hq_location_2 = find_first_repeated(&steps).unwrap();
-    println!("Part 2: {}", hq_location_2.distance());
+    let hq_location2 = find_first_repeated(&steps).unwrap();
+    println!("Part 2: {}", hq_location2.distance());
 
     Ok(())
 }
