@@ -14,7 +14,10 @@ impl Triangle {
 }
 
 fn count_part_1(input: &[[u32; 3]]) -> usize {
-    input.iter().filter(|sides| Triangle::new(**sides).is_valid()).count()
+    input
+        .iter()
+        .filter(|sides| Triangle::new(**sides).is_valid())
+        .count()
 }
 
 fn count_part_2(input: &[[u32; 3]]) -> usize {
@@ -52,18 +55,14 @@ fn main() -> anyhow::Result<()> {
 
     let part_2 = count_part_2(&input);
     println!("Part 2: {part_2}");
-        
+
     Ok(())
 }
 
 #[cfg(test)]
 mod day03 {
-    use super::*;
-
     #[test]
     fn part1() -> anyhow::Result<()> {
-        
-
         Ok(())
     }
 
