@@ -61,13 +61,25 @@ fn main() -> anyhow::Result<()> {
 
 #[cfg(test)]
 mod day03 {
+    use super::*;
+
     #[test]
     fn part1() -> anyhow::Result<()> {
+        assert!(Triangle::new([5, 10, 25]).is_valid() == false);
         Ok(())
     }
 
     #[test]
     fn part2() -> anyhow::Result<()> {
+        let input = [
+            [101, 301, 501],
+            [102, 302, 502],
+            [103, 303, 503],
+            [201, 401, 601],
+            [202, 402, 602],
+            [203, 403, 603],
+        ];
+        assert_eq!(count_part_2(&input), 6);
         Ok(())
     }
 }
