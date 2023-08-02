@@ -65,7 +65,7 @@ mod day03 {
 
     #[test]
     fn part1() -> anyhow::Result<()> {
-        assert!(Triangle::new([5, 10, 25]).is_valid() == false);
+        assert!(!Triangle::new([5, 10, 25]).is_valid());
         Ok(())
     }
 
