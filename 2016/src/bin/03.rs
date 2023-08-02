@@ -13,11 +13,11 @@ impl Triangle {
     }
 }
 
-fn count_part_1(input: &Vec<[u32; 3]>) -> usize {
+fn count_part_1(input: &[[u32; 3]]) -> usize {
     input.iter().filter(|sides| Triangle::new(**sides).is_valid()).count()
 }
 
-fn count_part_2(input: &Vec<[u32; 3]>) -> usize {
+fn count_part_2(input: &[[u32; 3]]) -> usize {
     let mut count = 0;
     for i in 0..input.len() / 3 {
         let mut sides = [[0; 3]; 3];
