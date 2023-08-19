@@ -1,5 +1,5 @@
-use std::str::FromStr;
 use anyhow::Result;
+use std::str::FromStr;
 use utils::parse_each_line;
 
 #[derive(Debug)]
