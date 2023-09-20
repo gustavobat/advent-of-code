@@ -1,10 +1,11 @@
 use anyhow::Result;
-use std::str::FromStr;
+use std::{path::Path, str::FromStr};
 
 /// Parse a file into a generic container C, which implements FromIterator<T>,
 /// by parsing each substring yielded by the split
-pub fn parse_each_split<T, C>(path: &str, pattern: &str) -> Result<C>
+pub fn parse_each_split<P, T, C>(path: P, pattern: &str) -> Result<C>
 where
+    P: AsRef<Path>,
     T: FromStr,
     C: FromIterator<T>,
 {
@@ -17,8 +18,9 @@ where
 
 /// Parse a file into a generic container C, which implements FromIterator<T>,
 /// by parsing each line into a type `T` object.
-pub fn parse_each_line<T, C>(path: &str) -> Result<C>
+pub fn parse_each_line<P, T, C>(path: P) -> Result<C>
 where
+    P: AsRef<Path>,
     T: FromStr,
     C: FromIterator<T>,
 {
