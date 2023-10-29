@@ -12,7 +12,8 @@ where
     Ok(std::fs::read_to_string(path)?
         .trim_end()
         .split(pattern)
-        .filter_map(|line| line.parse::<T>().ok())
+        .filter(|str| !str.is_empty())
+        .filter_map(|str| str.parse::<T>().ok())
         .collect())
 }
 
