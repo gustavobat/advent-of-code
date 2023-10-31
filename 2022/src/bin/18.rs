@@ -49,8 +49,7 @@ impl LavaCube {
 fn compute_surface_area(cubes: &HashSet<LavaCube>) -> usize {
     cubes
         .iter()
-        .map(|cube| cube.neighbours())
-        .flatten()
+        .flat_map(|cube| cube.neighbours())
         .filter(|neigh| !cubes.contains(&LavaCube { coord: *neigh }))
         .count()
 }
