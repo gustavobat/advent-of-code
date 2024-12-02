@@ -1,7 +1,7 @@
 use anyhow::Result;
 use itertools::Either;
 
-fn is_visible(i: usize, j: usize, grid: &Vec<Vec<u32>>) -> bool {
+fn is_visible(i: usize, j: usize, grid: &[Vec<u32>]) -> bool {
     let rows = grid.len();
     let cols = grid[0].len();
 
@@ -11,12 +11,10 @@ fn is_visible(i: usize, j: usize, grid: &Vec<Vec<u32>>) -> bool {
     }
 
     let cur_height = grid[i][j];
-    let ranges = vec![
-        Either::Left((0..j).rev()),
+    let ranges = [Either::Left((0..j).rev()),
         Either::Right(j + 1..cols),
         Either::Left((0..i).rev()),
-        Either::Right(i + 1..rows),
-    ];
+        Either::Right(i + 1..rows)];
     ranges.iter().enumerate().any(|(idx, range)| {
         range
             .clone()
@@ -29,7 +27,7 @@ fn is_visible(i: usize, j: usize, grid: &Vec<Vec<u32>>) -> bool {
     })
 }
 
-fn scenic_score(i: usize, j: usize, grid: &Vec<Vec<u32>>) -> u32 {
+fn scenic_score(i: usize, j: usize, grid: &[Vec<u32>]) -> u32 {
     let rows = grid.len();
     let cols = grid[0].len();
 
@@ -40,12 +38,10 @@ fn scenic_score(i: usize, j: usize, grid: &Vec<Vec<u32>>) -> u32 {
 
     // Current height
     let cur_height = grid[i][j];
-    let ranges = vec![
-        Either::Left((0..j).rev()),
+    let ranges = [Either::Left((0..j).rev()),
         Either::Right(j + 1..cols),
         Either::Left((0..i).rev()),
-        Either::Right(i + 1..rows),
-    ];
+        Either::Right(i + 1..rows)];
 
     ranges.iter().enumerate().fold(1, |acc, (idx, range)| {
         let mut visible_trees = 0;
@@ -64,7 +60,7 @@ fn scenic_score(i: usize, j: usize, grid: &Vec<Vec<u32>>) -> u32 {
     })
 }
 
-fn solve_part1(grid: &Vec<Vec<u32>>) -> u32 {
+fn solve_part1(grid: &[Vec<u32>]) -> u32 {
     grid.iter().enumerate().fold(0, |acc, (i, row)| {
         acc + row
             .iter()
@@ -74,7 +70,7 @@ fn solve_part1(grid: &Vec<Vec<u32>>) -> u32 {
     })
 }
 
-fn solve_part2(grid: &Vec<Vec<u32>>) -> u32 {
+fn solve_part2(grid: &[Vec<u32>]) -> u32 {
     grid.iter().enumerate().fold(0, |max_val, (i, row)| {
         max_val.max(
             row.iter()

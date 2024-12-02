@@ -32,7 +32,7 @@ fn get_input(path: &std::path::Path) -> (Vec<Vec<u8>>, Position, Position) {
     (hill, start, end)
 }
 
-fn solve_part1(hill: &Vec<Vec<u8>>, start: Position, end: Position) -> Result<usize> {
+fn solve_part1(hill: &[Vec<u8>], start: Position, end: Position) -> Result<usize> {
     let mut dist = HashMap::new();
     let mut unvisited = HashSet::new();
 
@@ -79,7 +79,7 @@ fn solve_part1(hill: &Vec<Vec<u8>>, start: Position, end: Position) -> Result<us
     Ok(dist[&end])
 }
 
-fn solve_part2(hill: &Vec<Vec<u8>>, end: Position) -> Result<usize> {
+fn solve_part2(hill: &[Vec<u8>], end: Position) -> Result<usize> {
     let mut length_of_possible_trails = HashSet::new();
     for (j, _) in hill.iter().enumerate() {
         // Optimization: we can iterate only first column, since

@@ -69,7 +69,7 @@ fn make_grid(paths: &mut Vec<Vec<(usize, usize)>>, has_floor: bool) -> (Vec<Vec<
     (grid, source_x)
 }
 
-fn solve(grid: &mut Vec<Vec<char>>, source_x: usize) -> usize {
+fn solve(grid: &mut [Vec<char>], source_x: usize) -> usize {
     let mut sand_counter = 0;
     let mut finished = false;
     while !finished {

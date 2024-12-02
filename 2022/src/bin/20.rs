@@ -10,7 +10,7 @@ fn mix(orig_nums: &[i64], mixed_pos: &mut Vec<usize>) {
     }
 }
 
-fn sum_grove_coords(orig_nums: &[i64], mixed_pos: &mut Vec<usize>) -> i64 {
+fn sum_grove_coords(orig_nums: &[i64], mixed_pos: &mut [usize]) -> i64 {
     let zero_pos = orig_nums.iter().position(|&num| num == 0).unwrap();
     let mixed_zero_pos = mixed_pos.iter().position(|&pos| pos == zero_pos).unwrap();
 

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::{cmp::Ordering, collections::HashSet};
 
-fn move_rope(rope: &mut Vec<(i32, i32)>, direction: &str) {
+fn move_rope(rope: &mut [(i32, i32)], direction: &str) {
     let dir_offset: (i32, i32) = match direction {
         "R" => Some((0, 1)),
         "L" => Some((0, -1)),

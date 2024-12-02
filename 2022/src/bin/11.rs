@@ -86,7 +86,7 @@ impl FromStr for Monkey {
 }
 
 fn process_round(
-    monkeys: &mut Vec<Monkey>,
+    monkeys: &mut [Monkey],
     items_inspected_per_monkey: &mut [usize],
     worry_relief: fn(usize, &[Monkey]) -> usize,
 ) {
