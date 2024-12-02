@@ -5,8 +5,7 @@ edition = "2021"
 autobins = true
 
 [dependencies]
-anyhow = "1.0.71"
-itertools = "0.11.0"
-regex = "1.8.4"
-utils = { path = "../utils" }
-
+anyhow = { workspace = true }
+itertools =  { workspace = true }
+regex = { workspace = true }
+utils = { workspace = true }
