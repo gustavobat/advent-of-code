@@ -1,0 +1,11 @@
+[package]
+name = "aoc24"
+version = "0.1.0"
+edition = "2021"
+autobins = true
+
+[dependencies]
+anyhow = { workspace = true }
+itertools =  { workspace = true }
+regex = { workspace = true }
+utils = { workspace = true }
