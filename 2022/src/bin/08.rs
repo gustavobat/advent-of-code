@@ -11,10 +11,12 @@ fn is_visible(i: usize, j: usize, grid: &[Vec<u32>]) -> bool {
     }
 
     let cur_height = grid[i][j];
-    let ranges = [Either::Left((0..j).rev()),
+    let ranges = [
+        Either::Left((0..j).rev()),
         Either::Right(j + 1..cols),
         Either::Left((0..i).rev()),
-        Either::Right(i + 1..rows)];
+        Either::Right(i + 1..rows),
+    ];
     ranges.iter().enumerate().any(|(idx, range)| {
         range
             .clone()
@@ -38,10 +40,12 @@ fn scenic_score(i: usize, j: usize, grid: &[Vec<u32>]) -> u32 {
 
     // Current height
     let cur_height = grid[i][j];
-    let ranges = [Either::Left((0..j).rev()),
+    let ranges = [
+        Either::Left((0..j).rev()),
         Either::Right(j + 1..cols),
         Either::Left((0..i).rev()),
-        Either::Right(i + 1..rows)];
+        Either::Right(i + 1..rows),
+    ];
 
     ranges.iter().enumerate().fold(1, |acc, (idx, range)| {
         let mut visible_trees = 0;
