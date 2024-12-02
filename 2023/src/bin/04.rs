@@ -60,7 +60,7 @@ fn total_scratch_cards(cards: &[Card]) -> usize {
             copies[j] += copies[i];
         }
     });
-    return copies.iter().sum();
+    copies.iter().sum()
 }
 
 fn main() -> Result<()> {
