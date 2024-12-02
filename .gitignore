@@ -2,3 +2,4 @@ target/
 **/Cargo.lock
 session.txt
 */data/*.input
+.idea
