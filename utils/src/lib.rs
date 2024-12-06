@@ -1,3 +1,5 @@
+pub mod grid;
+
 use anyhow::Result;
 use std::{path::Path, str::FromStr};
 
