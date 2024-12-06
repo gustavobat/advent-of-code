@@ -6,6 +6,6 @@ autobins = true
 
 [dependencies]
 anyhow = { workspace = true }
-itertools =  { workspace = true }
+itertools = { workspace = true }
 regex = { workspace = true }
 utils = { workspace = true }
