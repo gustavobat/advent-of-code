@@ -5,7 +5,7 @@ use utils::grid::Direction;
 use utils::grid::Grid;
 
 #[derive(Debug, Clone)]
-pub enum GuardRoute {
+enum GuardRoute {
     InfiniteLoop,
     Route(HashSet<(usize, usize)>),
 }

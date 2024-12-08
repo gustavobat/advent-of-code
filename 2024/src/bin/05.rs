@@ -1,10 +1,10 @@
 use anyhow::{anyhow, Result};
 use std::collections::{HashMap, HashSet};
 
-pub type OrderingRules = HashMap<usize, HashSet<usize>>;
+type OrderingRules = HashMap<usize, HashSet<usize>>;
 
 #[derive(Debug, Clone)]
-pub struct Update(pub Vec<usize>);
+struct Update(pub Vec<usize>);
 
 impl Update {
     pub fn is_sorted(&self, ordering: &OrderingRules) -> bool {
