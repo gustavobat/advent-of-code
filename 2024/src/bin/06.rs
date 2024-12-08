@@ -86,7 +86,7 @@ fn main() -> Result<()> {
 }
 
 #[cfg(test)]
-mod day01 {
+mod day06 {
     use super::*;
 
     #[test]

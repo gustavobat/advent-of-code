@@ -50,7 +50,7 @@ fn main() -> anyhow::Result<()> {
 }
 
 #[cfg(test)]
-mod day01 {
+mod day02 {
     use super::*;
 
     #[test]
