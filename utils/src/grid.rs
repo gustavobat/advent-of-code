@@ -5,7 +5,7 @@ pub struct Grid<T> {
     data: Vec<Vec<T>>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     Up,
     Down,
@@ -15,6 +15,21 @@ pub enum Direction {
     UpRight,
     DownLeft,
     DownRight,
+}
+
+impl Direction {
+    pub fn move_position_unchecked(&self, (row, col): (usize, usize)) -> (usize, usize) {
+        match self {
+            Direction::Up => (row - 1, col),
+            Direction::Down => (row + 1, col),
+            Direction::Left => (row, col - 1),
+            Direction::Right => (row, col + 1),
+            Direction::UpLeft => (row - 1, col - 1),
+            Direction::UpRight => (row - 1, col + 1),
+            Direction::DownLeft => (row + 1, col - 1),
+            Direction::DownRight => (row + 1, col + 1),
+        }
+    }
 }
 
 impl Direction {
@@ -30,6 +45,15 @@ impl Direction {
             Direction::DownRight => (1, 1),
         }
     }
+    pub fn rotate_right(&mut self) {
+        *self = match &self {
+            Direction::Up => Direction::Right,
+            Direction::Down => Direction::Left,
+            Direction::Left => Direction::Up,
+            Direction::Right => Direction::Down,
+            _ => unimplemented!(),
+        }
+    }
 }
 
 impl<T> Grid<T> {
@@ -43,6 +67,10 @@ impl<T> Grid<T> {
 
     pub fn get_mut(&mut self, row: usize, col: usize) -> Option<&mut T> {
         self.data.get_mut(row).and_then(|r| r.get_mut(col))
+    }
+
+    pub fn set(&mut self, row: usize, col: usize, value: T) {
+        self.data[row][col] = value;
     }
 
     pub fn rows(&self) -> usize {
@@ -75,6 +103,18 @@ impl<T> Grid<T> {
 
     pub fn iter(&self) -> impl Iterator<Item = (usize, usize)> + use<'_, T> {
         (0..self.rows()).flat_map(move |row| (0..self.cols()).map(move |col| (row, col)))
+    }
+}
+
+impl<T> Clone for Grid<T>
+where
+    T: Clone,
+{
+    #[inline]
+    fn clone(&self) -> Self {
+        Self {
+            data: self.data.clone(),
+        }
     }
 }
 
