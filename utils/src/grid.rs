@@ -104,6 +104,10 @@ impl<T> Grid<T> {
     pub fn iter(&self) -> impl Iterator<Item = (usize, usize)> + use<'_, T> {
         (0..self.rows()).flat_map(move |row| (0..self.cols()).map(move |col| (row, col)))
     }
+
+    pub fn is_out_of_bounds(&self, row: i32, col: i32) -> bool {
+        row < 0 || row >= self.rows() as i32 || col < 0 || col >= self.cols() as i32
+    }
 }
 
 impl<T> Clone for Grid<T>
