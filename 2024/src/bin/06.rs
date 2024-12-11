@@ -50,8 +50,8 @@ fn analyze_guard_route(grid: &Grid<char>) -> Result<GuardRoute> {
     Ok(GuardRoute::Route(visited))
 }
 
-fn solve_part_one(grid: Grid<char>) -> Result<usize> {
-    let Ok(GuardRoute::Route(visited)) = analyze_guard_route(&grid) else {
+fn solve_part_one(grid: &Grid<char>) -> Result<usize> {
+    let Ok(GuardRoute::Route(visited)) = analyze_guard_route(grid) else {
         return Err(anyhow!("Unexpected infinite loop"));
     };
     Ok(visited.len())
@@ -76,7 +76,7 @@ fn main() -> Result<()> {
     let input = std::fs::read_to_string("data/06.input")?;
     let input = Grid::from_str(&input)?;
 
-    let part1 = solve_part_one(input.clone())?;
+    let part1 = solve_part_one(&input)?;
     let part2 = solve_part_two(&input)?;
 
     println!("Part 1: {part1}");
@@ -93,7 +93,7 @@ mod day06 {
     fn part1() {
         let input = std::fs::read_to_string("data/06.test").unwrap();
         let input = Grid::from_str(&input).unwrap();
-        let part1 = solve_part_one(input).unwrap();
+        let part1 = solve_part_one(&input).unwrap();
         assert_eq!(part1, 41);
     }
 
