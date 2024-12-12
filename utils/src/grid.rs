@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
 pub struct Grid<T> {
@@ -28,6 +28,71 @@ impl Direction {
             Direction::UpRight => (row - 1, col + 1),
             Direction::DownLeft => (row + 1, col - 1),
             Direction::DownRight => (row + 1, col + 1),
+        }
+    }
+
+    pub fn move_position(
+        &self,
+        (row, col): (usize, usize),
+        (n_rows, n_cols): (usize, usize),
+    ) -> Option<(usize, usize)> {
+        match self {
+            Direction::Up => {
+                if row == 0 {
+                    None
+                } else {
+                    Some((row - 1, col))
+                }
+            }
+            Direction::Down => {
+                if row == n_rows - 1 {
+                    None
+                } else {
+                    Some((row + 1, col))
+                }
+            }
+            Direction::Left => {
+                if col == 0 {
+                    None
+                } else {
+                    Some((row, col - 1))
+                }
+            }
+            Direction::Right => {
+                if col == n_cols - 1 {
+                    None
+                } else {
+                    Some((row, col + 1))
+                }
+            }
+            Direction::UpLeft => {
+                if row == 0 || col == 0 {
+                    None
+                } else {
+                    Some((row - 1, col - 1))
+                }
+            }
+            Direction::UpRight => {
+                if row == 0 || col == n_cols - 1 {
+                    None
+                } else {
+                    Some((row - 1, col + 1))
+                }
+            }
+            Direction::DownLeft => {
+                if row == n_rows - 1 || col == 0 {
+                    None
+                } else {
+                    Some((row + 1, col - 1))
+                }
+            }
+            Direction::DownRight => {
+                if row == n_rows - 1 || col == n_cols - 1 {
+                    None
+                } else {
+                    Some((row + 1, col + 1))
+                }
+            }
         }
     }
 }
@@ -108,6 +173,38 @@ impl<T> Grid<T> {
     pub fn is_out_of_bounds(&self, row: i32, col: i32) -> bool {
         row < 0 || row >= self.rows() as i32 || col < 0 || col >= self.cols() as i32
     }
+
+    pub fn get_cardinal_neighbors(&self, row: usize, col: usize) -> Vec<(usize, usize)> {
+        let mut neighbors = Vec::new();
+        for direction in &[
+            Direction::Up,
+            Direction::Down,
+            Direction::Left,
+            Direction::Right,
+        ] {
+            if let Some((r, c)) = direction.move_position((row, col), (self.rows(), self.cols())) {
+                neighbors.push((r, c));
+            }
+        }
+        neighbors
+    }
+
+    pub fn get_all_neighbors(&self, row: usize, col: usize) -> Vec<(usize, usize)> {
+        let mut neighbors = Vec::new();
+        for dr in -1..=1 {
+            for dc in -1..=1 {
+                if dr == 0 && dc == 0 {
+                    continue;
+                }
+                let r = row as i32 + dr;
+                let c = col as i32 + dc;
+                if !self.is_out_of_bounds(r, c) {
+                    neighbors.push((r as usize, c as usize));
+                }
+            }
+        }
+        neighbors
+    }
 }
 
 impl<T> Clone for Grid<T>
@@ -134,6 +231,18 @@ impl FromStr for Grid<char> {
     }
 }
 
+impl FromStr for Grid<u8> {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let data = s
+            .lines()
+            .map(|line| line.chars().map(|c| c as u8 - b'0').collect())
+            .collect::<Vec<_>>();
+        Ok(Self::new(data))
+    }
+}
+
 impl<T> Debug for Grid<T>
 where
     T: Debug,
@@ -141,6 +250,21 @@ where
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         for row in &self.data {
             writeln!(f, "{:?}", row)?;
+        }
+        Ok(())
+    }
+}
+
+impl<T> Display for Grid<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        for row in &self.data {
+            for col in row {
+                write!(f, "{}", col)?;
+            }
+            writeln!(f)?;
         }
         Ok(())
     }
