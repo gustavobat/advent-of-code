@@ -6,10 +6,10 @@ use utils::grid::Grid;
 
 fn find_antennas(grid: &Grid<char>) -> HashMap<char, Vec<(usize, usize)>> {
     let mut antennas = HashMap::new();
-    for (row, col) in grid.iter() {
-        if let Some(&c) = grid.get(row, col) {
+    for pos in grid.iter() {
+        if let Some(&c) = grid.get(pos) {
             if c.is_ascii_alphanumeric() {
-                antennas.entry(c).or_insert_with(Vec::new).push((row, col));
+                antennas.entry(c).or_insert_with(Vec::new).push(pos);
             }
         }
     }

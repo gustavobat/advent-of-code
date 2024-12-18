@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use utils::grid::Direction;
 use utils::grid::Grid;
+
 fn solve_part_one(grid: &Grid<char>) -> usize {
     let directions = [
         Direction::Up,
@@ -24,11 +25,11 @@ fn solve_part_one(grid: &Grid<char>) -> usize {
     };
 
     let mut count = 0;
-    for (row, col) in grid.iter() {
-        if grid.get(row, col) == Some(&'X') {
+    for pos in grid.iter() {
+        if grid.get(pos) == Some(&'X') {
             count += directions
                 .iter()
-                .map(|dir| is_xmas(Box::new(grid.iter_direction(row, col, *dir))))
+                .map(|dir| is_xmas(Box::new(grid.iter_direction(pos, *dir).map(|(_, ch)| ch))))
                 .filter(|&b| b)
                 .count();
         }
@@ -43,11 +44,11 @@ fn solve_part_two(grid: &Grid<char>) -> usize {
             continue;
         }
         if let (Some(&'A'), Some(&c11), Some(&c12), Some(&c21), Some(&c22)) = (
-            grid.get(row, col),
-            grid.get(row - 1, col - 1),
-            grid.get(row + 1, col + 1),
-            grid.get(row - 1, col + 1),
-            grid.get(row + 1, col - 1),
+            grid.get((row, col)),
+            grid.get((row - 1, col - 1)),
+            grid.get((row + 1, col + 1)),
+            grid.get((row - 1, col + 1)),
+            grid.get((row + 1, col - 1)),
         ) {
             let is_mas =
                 |c1: char, c2: char| -> bool { (c1, c2) == ('M', 'S') || (c1, c2) == ('S', 'M') };

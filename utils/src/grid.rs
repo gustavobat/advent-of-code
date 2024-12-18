@@ -1,6 +1,8 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
+pub type Position = (usize, usize);
+
 pub struct Grid<T> {
     data: Vec<Vec<T>>,
 }
@@ -18,7 +20,7 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn move_position_unchecked(&self, (row, col): (usize, usize)) -> (usize, usize) {
+    pub fn move_position_unchecked(&self, (row, col): Position) -> Position {
         match self {
             Direction::Up => (row - 1, col),
             Direction::Down => (row + 1, col),
@@ -33,9 +35,9 @@ impl Direction {
 
     pub fn move_position(
         &self,
-        (row, col): (usize, usize),
-        (n_rows, n_cols): (usize, usize),
-    ) -> Option<(usize, usize)> {
+        (row, col): Position,
+        (n_rows, n_cols): Position,
+    ) -> Option<Position> {
         match self {
             Direction::Up => {
                 if row == 0 {
@@ -126,15 +128,18 @@ impl<T> Grid<T> {
         Self { data }
     }
 
-    pub fn get(&self, row: usize, col: usize) -> Option<&T> {
+    pub fn get(&self, position: Position) -> Option<&T> {
+        let (row, col) = position;
         self.data.get(row).and_then(|r| r.get(col))
     }
 
-    pub fn get_mut(&mut self, row: usize, col: usize) -> Option<&mut T> {
+    pub fn get_mut(&mut self, position: Position) -> Option<&mut T> {
+        let (row, col) = position;
         self.data.get_mut(row).and_then(|r| r.get_mut(col))
     }
 
-    pub fn set(&mut self, row: usize, col: usize, value: T) {
+    pub fn set(&mut self, position: Position, value: T) {
+        let (row, col) = position;
         self.data[row][col] = value;
     }
 
@@ -148,25 +153,29 @@ impl<T> Grid<T> {
 
     pub fn iter_direction(
         &self,
-        row: usize,
-        col: usize,
+        position: Position,
         direction: Direction,
-    ) -> impl Iterator<Item = &T> {
+    ) -> impl Iterator<Item = (Position, &T)> {
         let (dr, dc) = direction.coord_delta();
+        let (row, col) = position;
         let mut r = row as i32;
         let mut c = col as i32;
-        std::iter::once(self.get(row, col).unwrap()).chain(std::iter::from_fn(move || {
-            r += dr;
-            c += dc;
-            if r < 0 || r >= self.rows() as i32 || c < 0 || c >= self.cols() as i32 {
-                None
-            } else {
-                Some(self.get(r as usize, c as usize).unwrap())
-            }
-        }))
+        std::iter::once((position, self.get(position).unwrap())).chain(std::iter::from_fn(
+            move || {
+                r += dr;
+                c += dc;
+                if r < 0 || r >= self.rows() as i32 || c < 0 || c >= self.cols() as i32 {
+                    None
+                } else {
+                    let pos = (r as usize, c as usize);
+                    let val = self.get(pos).unwrap();
+                    Some((pos, val))
+                }
+            },
+        ))
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = (usize, usize)> + use<'_, T> {
+    pub fn iter(&self) -> impl Iterator<Item = Position> + use<'_, T> {
         (0..self.rows()).flat_map(move |row| (0..self.cols()).map(move |col| (row, col)))
     }
 
@@ -174,7 +183,7 @@ impl<T> Grid<T> {
         row < 0 || row >= self.rows() as i32 || col < 0 || col >= self.cols() as i32
     }
 
-    pub fn get_cardinal_neighbors(&self, row: usize, col: usize) -> Vec<(usize, usize)> {
+    pub fn get_cardinal_neighbors(&self, position: Position) -> Vec<(Direction, Position)> {
         let mut neighbors = Vec::new();
         for direction in &[
             Direction::Up,
@@ -182,28 +191,36 @@ impl<T> Grid<T> {
             Direction::Left,
             Direction::Right,
         ] {
-            if let Some((r, c)) = direction.move_position((row, col), (self.rows(), self.cols())) {
-                neighbors.push((r, c));
+            if let Some(pos) = direction.move_position(position, (self.rows(), self.cols())) {
+                neighbors.push((*direction, pos));
             }
         }
         neighbors
     }
 
-    pub fn get_all_neighbors(&self, row: usize, col: usize) -> Vec<(usize, usize)> {
+    pub fn get_all_neighbors(&self, position: Position) -> Vec<Position> {
         let mut neighbors = Vec::new();
+        let row = position.0 as i32;
+        let col = position.1 as i32;
         for dr in -1..=1 {
             for dc in -1..=1 {
                 if dr == 0 && dc == 0 {
                     continue;
                 }
-                let r = row as i32 + dr;
-                let c = col as i32 + dc;
+                let r = row + dr;
+                let c = col + dc;
                 if !self.is_out_of_bounds(r, c) {
                     neighbors.push((r as usize, c as usize));
                 }
             }
         }
         neighbors
+    }
+}
+
+impl<T: PartialEq> Grid<T> {
+    pub fn find_position(&self, target: &T) -> Option<Position> {
+        self.iter().find(|&pos| self.get(pos) == Some(target))
     }
 }
 

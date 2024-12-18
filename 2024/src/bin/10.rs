@@ -2,25 +2,27 @@ use anyhow::Result;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use utils::grid::Grid;
-
-type Position = (usize, usize);
+use utils::grid::Position;
 
 fn dfs(
     grid: &Grid<u8>,
     visited: &mut Vec<Position>,
     results: &mut HashMap<Position, Vec<Position>>,
 ) -> bool {
-    if let Some(&(row, col)) = visited.last() {
-        if let Some(&current_val) = grid.get(row, col) {
+    if let Some(&pos) = visited.last() {
+        if let Some(&current_val) = grid.get(pos) {
             if current_val == 9 {
-                results.entry(visited[0]).or_default().push((row, col));
+                results.entry(visited[0]).or_default().push(pos);
                 visited.pop();
                 return true;
             }
-            for neighbor in grid
-                .get_cardinal_neighbors(row, col)
-                .into_iter()
-                .filter(|&(r, c)| grid.get(r, c).map_or(false, |&val| val == current_val + 1))
+            for (_, neighbor) in
+                grid.get_cardinal_neighbors(pos)
+                    .into_iter()
+                    .filter(|(_, neigh)| {
+                        grid.get(*neigh)
+                            .map_or(false, |&val| val == current_val + 1)
+                    })
             {
                 visited.push(neighbor);
                 if !dfs(grid, visited, results) {
@@ -37,7 +39,7 @@ where
     F: Fn(Vec<Position>) -> usize,
 {
     let mut results = HashMap::new();
-    let possible_starts = grid.iter().filter(|(r, c)| grid.get(*r, *c) == Some(&0));
+    let possible_starts = grid.iter().filter(|pos| grid.get(*pos) == Some(&0));
     possible_starts.for_each(|(r, c)| {
         let mut visited = vec![(r, c)];
         dfs(grid, &mut visited, &mut results);

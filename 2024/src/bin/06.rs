@@ -11,13 +11,12 @@ enum GuardRoute {
 }
 
 fn analyze_guard_route(grid: &Grid<char>) -> Result<GuardRoute> {
-    let start = grid
+    let mut start = grid
         .iter()
-        .find(|(row, col)| grid.get(*row, *col) == Some(&'^'))
+        .find(|pos| grid.get(*pos) == Some(&'^'))
         .ok_or(anyhow!("No starting point found"))?;
 
     let mut direction = Direction::Up;
-    let (mut row, mut col) = start;
 
     let mut visited = HashSet::new();
     visited.insert(start);
@@ -25,25 +24,25 @@ fn analyze_guard_route(grid: &Grid<char>) -> Result<GuardRoute> {
     let mut turns = HashMap::new();
     let mut just_turned = false;
 
-    let mut iter = grid.iter_direction(row, col, direction).skip(1);
-    while let Some(next) = iter.next() {
+    let mut iter = grid.iter_direction(start, direction).skip(1);
+    while let Some((_, next)) = iter.next() {
         if *next == '#' {
-            if turns.get(&(row, col)).is_some_and(|&dir| dir == direction) {
+            if turns.get(&start).is_some_and(|&dir| dir == direction) {
                 return Ok(GuardRoute::InfiniteLoop);
             }
             if !just_turned {
                 // Avoid updating the direction if we just turned
-                turns.insert((row, col), direction);
+                turns.insert(start, direction);
             }
             just_turned = true;
             direction.rotate_right();
-            iter = grid.iter_direction(row, col, direction).skip(1);
+            iter = grid.iter_direction(start, direction).skip(1);
             continue;
         }
         if *next == '.' || *next == '^' {
             just_turned = false;
-            (row, col) = direction.move_position_unchecked((row, col));
-            visited.insert((row, col));
+            start = direction.move_position_unchecked(start);
+            visited.insert(start);
         }
     }
 
@@ -63,9 +62,9 @@ fn solve_part_two(grid: &Grid<char>) -> Result<usize> {
     };
     let infinite_loop_count = visited
         .iter()
-        .filter(|(row, col)| {
+        .filter(|&pos| {
             let mut new_grid = grid.clone();
-            new_grid.set(*row, *col, '#');
+            new_grid.set(*pos, '#');
             matches!(analyze_guard_route(&new_grid), Ok(GuardRoute::InfiniteLoop))
         })
         .count();
