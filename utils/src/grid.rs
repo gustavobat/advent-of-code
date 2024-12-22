@@ -216,6 +216,22 @@ impl<T> Grid<T> {
         }
         neighbors
     }
+
+    pub fn get_node_neighbors(&self, node_position: Position) -> Vec<Position> {
+        let mut neighbors = Vec::new();
+        let row = node_position.0 as i32;
+        let col = node_position.1 as i32;
+        for dr in -1..=0 {
+            for dc in -1..=0 {
+                let r = row + dr;
+                let c = col + dc;
+                if !self.is_out_of_bounds(r, c) {
+                    neighbors.push((r as usize, c as usize));
+                }
+            }
+        }
+        neighbors
+    }
 }
 
 impl<T: PartialEq> Grid<T> {
