@@ -1,0 +1,16 @@
+[package]
+name = "aoc24"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "aoc24"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+inventory = { workspace = true }
+itertools = { workspace = true }
+utils = { workspace = true }

@@ -1,0 +1,17 @@
+[package]
+name = "cli"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+aoc24 = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+colored = { workspace = true }
+dotenvy = { workspace = true }
+inventory = { workspace = true }
+reqwest = { workspace = true, features = ["blocking", "rustls-tls"] }
+spinners = { workspace = true }
+utils = { workspace = true }

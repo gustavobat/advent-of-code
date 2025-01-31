@@ -1,0 +1,14 @@
+[package]
+name = "utils"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "utils"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+inventory = { workspace = true }
