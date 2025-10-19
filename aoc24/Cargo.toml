@@ -13,4 +13,5 @@ path = "src/lib.rs"
 anyhow = { workspace = true }
 inventory = { workspace = true }
 itertools = { workspace = true }
+regex = { workspace = true }
 utils = { workspace = true }
