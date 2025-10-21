@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -58,6 +59,25 @@ impl Direction {
             Direction::DownRight => (1, 1),
         }
     }
+
+    pub fn rotate_right(&self) -> Direction {
+        match &self {
+            Direction::Up => Direction::Right,
+            Direction::Down => Direction::Left,
+            Direction::Left => Direction::Up,
+            Direction::Right => Direction::Down,
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn apply_to_coord(&self, (row, col): Coord) -> Option<Coord> {
+        let (dr, dc) = self.coord_delta();
+        let (n_rows, n_cols) = (row as i32 + dr, col as i32 + dc);
+        if n_rows >= 0 && n_cols >= 0 {
+            return Some((n_rows as usize, n_cols as usize));
+        }
+        None
+    }
 }
 
 impl<T> Grid<T> {
@@ -68,6 +88,15 @@ impl<T> Grid<T> {
     pub fn get(&self, coord: Coord) -> Option<&T> {
         let (row, col) = coord;
         self.data.get(row).and_then(|r| r.get(col))
+    }
+
+    pub fn set(&mut self, coord: Coord, value: T) -> anyhow::Result<()> {
+        if !self.contains(coord.0 as i32, coord.1 as i32) {
+            return Err(anyhow!("Invalid coordinate"));
+        }
+        let (row, col) = coord;
+        self.data[row][col] = value;
+        Ok(())
     }
 
     pub fn rows(&self) -> usize {
@@ -81,7 +110,7 @@ impl<T> Grid<T> {
     pub fn iter_from_start_and_direction(
         &self,
         start: Coord,
-        direction: &Direction,
+        direction: Direction,
     ) -> impl Iterator<Item = &T> {
         let (dr, dc) = direction.coord_delta();
         let (row, col) = start;
@@ -101,6 +130,11 @@ impl<T> Grid<T> {
 
     pub fn contains(&self, row: i32, col: i32) -> bool {
         row >= 0 && row < self.rows() as i32 && col >= 0 && col < self.cols() as i32
+    }
+
+    pub fn find(&self, predicate: impl Fn(&T) -> bool) -> Option<Coord> {
+        self.iter_coords()
+            .find(|pos| predicate(self.get(*pos).unwrap()))
     }
 }
 
@@ -140,5 +174,17 @@ where
             writeln!(f)?;
         }
         Ok(())
+    }
+}
+
+impl<T> Clone for Grid<T>
+where
+    T: Clone,
+{
+    #[inline]
+    fn clone(&self) -> Self {
+        Self {
+            data: self.data.clone(),
+        }
     }
 }

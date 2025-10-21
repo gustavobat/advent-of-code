@@ -15,7 +15,7 @@ fn solve_part_one(grid: &Grid<char>) -> usize {
         .map(|coord| {
             Direction::all()
                 .iter()
-                .filter(|dir| {
+                .filter(|&&dir| {
                     let yielded = grid
                         .iter_from_start_and_direction(coord, dir)
                         .copied()

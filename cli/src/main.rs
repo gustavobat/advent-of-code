@@ -43,7 +43,10 @@ fn main() -> anyhow::Result<()> {
             let input = std::fs::read_to_string(input_path)?;
 
             let mut spinner = Spinner::new(spinners::Spinners::Dots9, "Solving ...".into());
+
+            let start_time = std::time::Instant::now();
             let result = (solver.solver)(&input);
+            let elapsed = start_time.elapsed();
 
             let success_symbol = "✔".green().to_string();
             let failure_symbol = "✘".red().to_string();
@@ -52,7 +55,13 @@ fn main() -> anyhow::Result<()> {
                 spinner
                     .stop_and_persist(&failure_symbol, "An error occurred during solution.".into());
             })?;
-            spinner.stop_and_persist(&success_symbol, "Solution complete.".into());
+            spinner.stop_and_persist(
+                &success_symbol,
+                format!(
+                    "Solution found! Elapsed time: {:.4}s.",
+                    elapsed.as_secs_f32()
+                ),
+            );
 
             println!();
             println!("{}\n{}", "Part one:".green().bold(), solution.part_one);
