@@ -4,12 +4,72 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::str::FromStr;
 
-pub type Coord = (usize, usize);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Coord(pub i32, pub i32);
 
-pub type CoordDelta = (i32, i32);
+impl Coord {
+    pub fn row(&self) -> i32 {
+        self.0
+    }
 
-pub struct Grid<T> {
-    data: Vec<Vec<T>>,
+    pub fn col(&self) -> i32 {
+        self.1
+    }
+}
+
+impl std::ops::Add for Coord {
+    type Output = Coord;
+    fn add(self, other: Coord) -> Self::Output {
+        Coord(self.0 + other.0, self.1 + other.1)
+    }
+}
+
+impl std::ops::AddAssign for Coord {
+    fn add_assign(&mut self, other: Coord) {
+        *self = *self + other;
+    }
+}
+
+impl std::ops::Sub for Coord {
+    type Output = Coord;
+    fn sub(self, other: Coord) -> Self::Output {
+        Coord(self.0 - other.0, self.1 - other.1)
+    }
+}
+
+impl std::ops::SubAssign for Coord {
+    fn sub_assign(&mut self, other: Coord) {
+        *self = *self - other;
+    }
+}
+
+impl std::ops::Neg for Coord {
+    type Output = Coord;
+    fn neg(self) -> Self::Output {
+        Coord(-self.0, -self.1)
+    }
+}
+
+impl Display for Coord {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.0, self.1)
+    }
+}
+
+impl TryFrom<Coord> for (usize, usize) {
+    type Error = anyhow::Error;
+    fn try_from(value: Coord) -> Result<Self, Self::Error> {
+        if value.0 < 0 || value.1 < 0 {
+            return Err(anyhow!("Negative coordinate cannot be converted to usize"));
+        }
+        Ok((value.0 as usize, value.1 as usize))
+    }
+}
+
+impl From<(usize, usize)> for Coord {
+    fn from(value: (usize, usize)) -> Self {
+        Coord(value.0 as i32, value.1 as i32)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -47,16 +107,16 @@ impl Direction {
         ]
     }
 
-    pub fn coord_delta(&self) -> (i32, i32) {
+    pub fn as_coord_delta(&self) -> Coord {
         match self {
-            Direction::Up => (-1, 0),
-            Direction::Down => (1, 0),
-            Direction::Left => (0, -1),
-            Direction::Right => (0, 1),
-            Direction::UpLeft => (-1, -1),
-            Direction::UpRight => (-1, 1),
-            Direction::DownLeft => (1, -1),
-            Direction::DownRight => (1, 1),
+            Direction::Up => Coord(-1, 0),
+            Direction::Down => Coord(1, 0),
+            Direction::Left => Coord(0, -1),
+            Direction::Right => Coord(0, 1),
+            Direction::UpLeft => Coord(-1, -1),
+            Direction::UpRight => Coord(-1, 1),
+            Direction::DownLeft => Coord(1, -1),
+            Direction::DownRight => Coord(1, 1),
         }
     }
 
@@ -70,14 +130,13 @@ impl Direction {
         }
     }
 
-    pub fn apply_to_coord(&self, (row, col): Coord) -> Option<Coord> {
-        let (dr, dc) = self.coord_delta();
-        let (n_rows, n_cols) = (row as i32 + dr, col as i32 + dc);
-        if n_rows >= 0 && n_cols >= 0 {
-            return Some((n_rows as usize, n_cols as usize));
-        }
-        None
+    pub fn apply_to_coord(&self, coord: Coord) -> Coord {
+        coord + self.as_coord_delta()
     }
+}
+
+pub struct Grid<T> {
+    data: Vec<Vec<T>>,
 }
 
 impl<T> Grid<T> {
@@ -85,17 +144,15 @@ impl<T> Grid<T> {
         Self { data }
     }
 
-    pub fn get(&self, coord: Coord) -> Option<&T> {
-        let (row, col) = coord;
-        self.data.get(row).and_then(|r| r.get(col))
+    pub fn get(&self, index: (usize, usize)) -> Option<&T> {
+        self.data.get(index.0).and_then(|r| r.get(index.1))
     }
 
-    pub fn set(&mut self, coord: Coord, value: T) -> anyhow::Result<()> {
-        if !self.contains(coord.0 as i32, coord.1 as i32) {
+    pub fn set(&mut self, index: (usize, usize), value: T) -> anyhow::Result<()> {
+        if !self.contains(index) {
             return Err(anyhow!("Invalid coordinate"));
         }
-        let (row, col) = coord;
-        self.data[row][col] = value;
+        self.data[index.0][index.1] = value;
         Ok(())
     }
 
@@ -109,10 +166,10 @@ impl<T> Grid<T> {
 
     pub fn iter_from_start_and_direction(
         &self,
-        start: Coord,
+        start: (usize, usize),
         direction: Direction,
     ) -> impl Iterator<Item = &T> {
-        let (dr, dc) = direction.coord_delta();
+        let Coord(dr, dc) = direction.as_coord_delta();
         let (row, col) = start;
         let mut r = row as i32;
         let mut c = col as i32;
@@ -124,28 +181,44 @@ impl<T> Grid<T> {
         })
     }
 
-    pub fn iter_coords(&self) -> impl Iterator<Item = Coord> + use<'_, T> {
+    pub fn iter_flat_indices(&self) -> impl Iterator<Item = (usize, usize)> + use<'_, T> {
         (0..self.rows()).flat_map(move |row| (0..self.cols()).map(move |col| (row, col)))
     }
 
-    pub fn contains(&self, row: i32, col: i32) -> bool {
-        row >= 0 && row < self.rows() as i32 && col >= 0 && col < self.cols() as i32
+    pub fn contains(&self, index: (usize, usize)) -> bool {
+        index.0 < self.rows() && index.1 < self.cols()
     }
 
-    pub fn find(&self, predicate: impl Fn(&T) -> bool) -> Option<Coord> {
-        self.iter_coords()
+    pub fn find(&self, predicate: impl Fn(&T) -> bool) -> Option<(usize, usize)> {
+        self.iter_flat_indices()
             .find(|pos| predicate(self.get(*pos).unwrap()))
     }
 }
 
-impl FromStr for Grid<char> {
-    type Err = anyhow::Error;
+impl<T> Grid<T>
+where
+    T: FromStr,
+    T::Err: std::error::Error + Send + Sync + 'static,
+{
+    pub fn from_char_grid_str(s: &str) -> anyhow::Result<Self> {
+        let mut n_cols = None;
+        let mut data = Vec::new();
+        for line in s.lines() {
+            if let Some(n_cols) = n_cols {
+                if n_cols != line.chars().count() {
+                    return Err(anyhow!("Inconsistent number of columns in grid"));
+                }
+            } else {
+                n_cols = Some(line.chars().count());
+            }
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let data = s
-            .lines()
-            .map(|line| line.chars().collect())
-            .collect::<Vec<_>>();
+            let mut buffer = [0u8; 4];
+            let row = line
+                .chars()
+                .map(|c| c.encode_utf8(&mut buffer).parse())
+                .collect::<Result<Vec<T>, _>>()?;
+            data.push(row);
+        }
         Ok(Self::new(data))
     }
 }

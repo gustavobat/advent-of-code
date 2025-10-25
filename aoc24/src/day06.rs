@@ -2,7 +2,6 @@ use anyhow::Result;
 use anyhow::anyhow;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::str::FromStr;
 use utils::grid::Direction;
 use utils::grid::Grid;
 use utils::solution::Solution;
@@ -46,9 +45,8 @@ fn analyze_guard_route(grid: &Grid<char>) -> Result<GuardRoute> {
         }
         if *next == '.' || *next == '^' {
             just_turned = false;
-            cur_pos = cur_dir
-                .apply_to_coord(cur_pos)
-                .ok_or(anyhow!("Invalid position"))?;
+            let cur_pos_coord = cur_pos.into();
+            cur_pos = cur_dir.apply_to_coord(cur_pos_coord).try_into()?;
             visited.insert(cur_pos);
         }
     }
@@ -85,8 +83,7 @@ fn solve_part_two(grid: &Grid<char>) -> Result<usize> {
 }
 
 fn parse_input(input: &str) -> Result<Grid<char>> {
-    let input = Grid::from_str(input)?;
-    Ok(input)
+    Grid::from_char_grid_str(input)
 }
 
 fn solve_all(input: &str) -> Result<Solution> {

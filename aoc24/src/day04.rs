@@ -1,5 +1,4 @@
 use itertools::Itertools;
-use std::str::FromStr;
 use utils::grid::Direction;
 use utils::grid::Grid;
 use utils::solution::Solution;
@@ -10,7 +9,7 @@ inventory::submit! {
 }
 
 fn solve_part_one(grid: &Grid<char>) -> usize {
-    grid.iter_coords()
+    grid.iter_flat_indices()
         .filter(|coord| grid.get(*coord) == Some(&'X'))
         .map(|coord| {
             Direction::all()
@@ -30,9 +29,9 @@ fn solve_part_one(grid: &Grid<char>) -> usize {
 
 fn solve_part_two(grid: &Grid<char>) -> usize {
     let is_mas = |c1, c2| (c1, c2) == ('M', 'S') || (c1, c2) == ('S', 'M');
-    grid.iter_coords()
+    grid.iter_flat_indices()
         .filter(|(row, col)| {
-            if *row < 1 || *col < 1 {
+            if *row == 0 || *col == 0 {
                 return false;
             }
             if let [Some(&'A'), Some(&c11), Some(&c12), Some(&c21), Some(&c22)] = [
@@ -50,7 +49,7 @@ fn solve_part_two(grid: &Grid<char>) -> usize {
 }
 
 fn parse_input(input: &str) -> anyhow::Result<Grid<char>> {
-    Grid::from_str(input)
+    Grid::from_char_grid_str(input)
 }
 
 fn solve_all(input: &str) -> anyhow::Result<Solution> {
