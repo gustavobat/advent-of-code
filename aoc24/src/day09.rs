@@ -1,8 +1,8 @@
+use std::cmp::Ordering;
 use utils::solution::Solution;
 
 use anyhow::Result;
 use anyhow::anyhow;
-use std::cmp::Ordering;
 use utils::solution::Solver;
 
 inventory::submit! {
@@ -21,6 +21,14 @@ impl Partition {
             Partition::File { size, .. } => *size,
             Partition::FreeSpace(size) => *size,
         }
+    }
+
+    fn is_file(&self) -> bool {
+        matches!(self, Partition::File { .. })
+    }
+
+    fn is_free_space(&self) -> bool {
+        matches!(self, Partition::FreeSpace(_))
     }
 }
 
@@ -44,23 +52,6 @@ impl Disk {
                     checksum
                 }
             })
-    }
-
-    fn free_spaces(&self) -> Vec<(usize, &Partition)> {
-        self.0
-            .iter()
-            .enumerate()
-            .filter(|(_, part)| matches!(part, Partition::FreeSpace(_)))
-            .collect()
-    }
-
-    fn files(&self) -> Vec<(usize, &Partition)> {
-        self.0
-            .iter()
-            .enumerate()
-            .rev()
-            .filter(|(_, part)| matches!(part, Partition::File { .. }))
-            .collect()
     }
 
     fn move_file(&mut self, file_pos: usize, free_space_pos: usize) -> Result<()> {
@@ -107,21 +98,26 @@ impl Disk {
         &mut self,
         move_condition: impl Fn((usize, &Partition), (usize, &Partition)) -> bool,
     ) -> Result<()> {
-        let mut compressible = true;
-        while compressible {
-            compressible = false;
-            let free_spaces = self.free_spaces();
-            for (file_pos, file) in self.files() {
-                if let Some((free_space_pos, _)) =
-                    free_spaces.iter().find(|(free_space_pos, free_space)| {
-                        move_condition((file_pos, file), (*free_space_pos, free_space))
-                    })
-                {
-                    self.move_file(file_pos, *free_space_pos)?;
-                    compressible = true;
-                    break;
+        let mut i = self.0.len() - 1;
+        while i > 0 {
+            let block = &self.0[i];
+            if !block.is_file() {
+                i -= 1;
+                continue;
+            };
+
+            let Some(j) = self.0.iter().enumerate().find_map(|(j, space)| {
+                if space.is_free_space() && move_condition((i, block), (j, space)) {
+                    Some(j)
+                } else {
+                    None
                 }
-            }
+            }) else {
+                i -= 1;
+                continue;
+            };
+
+            self.move_file(i, j)?;
         }
         Ok(())
     }
