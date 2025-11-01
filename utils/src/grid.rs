@@ -98,6 +98,15 @@ impl Direction {
         ]
     }
 
+    pub fn cardinals() -> [Direction; 4] {
+        [
+            Direction::Up,
+            Direction::Down,
+            Direction::Left,
+            Direction::Right,
+        ]
+    }
+
     pub fn diagonals() -> [Direction; 4] {
         [
             Direction::UpLeft,
@@ -192,6 +201,25 @@ impl<T> Grid<T> {
     pub fn find(&self, predicate: impl Fn(&T) -> bool) -> Option<(usize, usize)> {
         self.iter_flat_indices()
             .find(|pos| predicate(self.get(*pos).unwrap()))
+    }
+
+    pub fn get_neighbors(
+        &self,
+        index: (usize, usize),
+        directions: &[Direction],
+    ) -> impl Iterator<Item = (usize, usize)> {
+        directions.iter().filter_map(move |dir| {
+            let Coord(dr, dc) = dir.as_coord_delta();
+            let new_row = index.0 as i32 + dr;
+            let new_col = index.1 as i32 + dc;
+            if new_row >= 0 && new_col >= 0 {
+                let new_index = (new_row as usize, new_col as usize);
+                if self.contains(new_index) {
+                    return Some(new_index);
+                }
+            }
+            None
+        })
     }
 }
 
