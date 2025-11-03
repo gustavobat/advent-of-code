@@ -221,6 +221,19 @@ impl<T> Grid<T> {
             None
         })
     }
+
+    /// Get the grid cells that are connected to a given corner coordinate.
+    /// For a grid of size n x m, there are (n + 1) x (m + 1) corners.
+    pub fn get_corner_neighbors(
+        &self,
+        corner_coord: (usize, usize),
+    ) -> impl Iterator<Item = (usize, usize)> {
+        self.get_neighbors(
+            corner_coord,
+            &[Direction::Up, Direction::Left, Direction::UpLeft],
+        )
+        .chain(std::iter::once(corner_coord))
+    }
 }
 
 impl<T> Grid<T>
