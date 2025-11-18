@@ -50,6 +50,13 @@ impl std::ops::Neg for Coord {
     }
 }
 
+impl std::ops::Mul<i32> for Coord {
+    type Output = Coord;
+    fn mul(self, other: i32) -> Self::Output {
+        Coord(self.0 * other, self.1 * other)
+    }
+}
+
 impl Display for Coord {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}, {})", self.0, self.1)
@@ -233,6 +240,24 @@ impl<T> Grid<T> {
             &[Direction::Up, Direction::Left, Direction::UpLeft],
         )
         .chain(std::iter::once(corner_coord))
+    }
+
+    pub fn get_relative_cells(
+        &self,
+        reference: (usize, usize),
+        offsets: &[Coord],
+    ) -> impl Iterator<Item = (usize, usize)> {
+        offsets.iter().filter_map(move |offset| {
+            let new_row = reference.0 as i32 + offset.0;
+            let new_col = reference.1 as i32 + offset.1;
+            if new_row >= 0 && new_col >= 0 {
+                let new_index = (new_row as usize, new_col as usize);
+                if self.contains(new_index) {
+                    return Some(new_index);
+                }
+            }
+            None
+        })
     }
 }
 
