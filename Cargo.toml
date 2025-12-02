@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "aoc24",
+    "aoc25",
     "cli",
     "utils",
 ]
@@ -15,6 +16,7 @@ rust-version = "1.90"
 [workspace.dependencies]
 anyhow = "1.0.100"
 aoc24 = { path = "aoc24" }
+aoc25 = { path = "aoc25" }
 clap = { version = "4.5.49" }
 colored = "3.0.0"
 dotenvy = "0.15.7"

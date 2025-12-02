@@ -5,6 +5,7 @@ use crate::parser::Commands;
 use crate::parser::Day;
 use crate::parser::Year;
 use aoc24 as _;
+use aoc25 as _;
 use clap::Parser;
 use colored::Colorize;
 use spinners::Spinner;
