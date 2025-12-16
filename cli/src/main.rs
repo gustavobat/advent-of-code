@@ -8,6 +8,7 @@ use aoc24 as _;
 use aoc25 as _;
 use clap::Parser;
 use colored::Colorize;
+use human_repr::HumanDuration;
 use spinners::Spinner;
 use std::path::PathBuf;
 use utils::solution::Solver;
@@ -47,7 +48,7 @@ fn main() -> anyhow::Result<()> {
 
             let start_time = std::time::Instant::now();
             let result = (solver.solver)(&input);
-            let elapsed = start_time.elapsed();
+            let elapsed = start_time.elapsed().human_duration();
 
             let success_symbol = "✔".green().to_string();
             let failure_symbol = "✘".red().to_string();
@@ -58,10 +59,7 @@ fn main() -> anyhow::Result<()> {
             })?;
             spinner.stop_and_persist(
                 &success_symbol,
-                format!(
-                    "Solution found! Elapsed time: {:.4}s.",
-                    elapsed.as_secs_f32()
-                ),
+                format!("Solution found! Elapsed time: {}.", elapsed),
             );
 
             println!();

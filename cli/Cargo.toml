@@ -12,6 +12,7 @@ aoc25 = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 colored = { workspace = true }
 dotenvy = { workspace = true }
+human-repr = { workspace = true }
 inventory = { workspace = true }
 reqwest = { workspace = true, features = ["blocking", "rustls-tls"] }
 spinners = { workspace = true }

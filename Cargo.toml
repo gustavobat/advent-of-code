@@ -20,6 +20,7 @@ aoc25 = { path = "aoc25" }
 clap = { version = "4.5.49" }
 colored = "3.0.0"
 dotenvy = "0.15.7"
+human-repr = "1.1.0"
 inventory = "0.3.21"
 itertools = "0.14.0"
 regex = { version = "1.12.2" }
