@@ -1,7 +1,6 @@
 use anyhow::anyhow;
 use clap::Parser;
 use clap::Subcommand;
-use std::path::PathBuf;
 use std::str::FromStr;
 
 #[derive(Parser, Debug)]
@@ -13,19 +12,26 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Build and run a solution
+    /// Build and run solutions (both year and day are optional)
     Run {
-        /// Year of the puzzle (e.g., 2023)
+        /// Year of the puzzle (e.g., 2023). If omitted, run all years.
         #[arg(short, long, value_parser = Year::from_str)]
-        year: Year,
+        year: Option<Year>,
 
-        /// Day of the puzzle (1-25)
+        /// Day of the puzzle (1-25). If omitted, run all days for the given year(s).
         #[arg(short, long, value_parser = Day::from_str)]
-        day: Day,
+        day: Option<Day>,
+    },
 
-        /// Optional input file path to pass to the solution
-        #[arg(short, long)]
-        input: Option<PathBuf>,
+    /// List matching solvers without executing them (both year and day are optional)
+    List {
+        /// Year of the puzzle (e.g., 2023). If omitted, list all years.
+        #[arg(short, long, value_parser = Year::from_str)]
+        year: Option<Year>,
+
+        /// Day of the puzzle (1-25). If omitted, list all days for the given year(s).
+        #[arg(short, long, value_parser = Day::from_str)]
+        day: Option<Day>,
     },
 
     /// Download puzzle input from adventofcode.com

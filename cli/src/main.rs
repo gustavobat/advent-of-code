@@ -13,58 +13,131 @@ use spinners::Spinner;
 use std::path::PathBuf;
 use utils::solution::Solver;
 
-fn make_input_path(year: Year, day: Day) -> PathBuf {
-    let year = year.value();
-    let day = day.value();
-    let package_path = format!("aoc{}", year % 2000);
-    PathBuf::from(format!("./{package_path}/resources/input/{day:02}.txt",))
+fn collect_solvers(year: Option<Year>, day: Option<Day>) -> Vec<&'static Solver> {
+    let mut solvers: Vec<&'static Solver> = inventory::iter::<Solver>()
+        .filter(|s| match year {
+            Some(y) => y.value() == s.year,
+            None => true,
+        })
+        .filter(|s| match day {
+            Some(d) => d.value() == s.day,
+            None => true,
+        })
+        .collect();
+
+    solvers.sort_by_key(|s| (s.year, s.day));
+    solvers
+}
+
+fn expected_input_path_for_solver(solver: &Solver) -> PathBuf {
+    let package_path = format!("aoc{}", solver.year % 2000);
+    PathBuf::from(format!(
+        "./{package_path}/resources/input/{:02}.txt",
+        solver.day
+    ))
+}
+
+fn solver_display_id(solver: &Solver) -> String {
+    format!("{} {}", solver.year, solver.day)
 }
 
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Run { year, day, input } => {
-            let Some(solver) = inventory::iter::<Solver>()
-                .find(|solver| solver.year == year.value() && solver.day == day.value())
-            else {
-                anyhow::bail!(
-                    "No solver found for year {} day {}",
-                    year.value(),
-                    day.value()
-                );
-            };
+        Commands::Run { year, day } => {
+            let solvers = collect_solvers(year, day);
 
-            let input_path = input.unwrap_or(make_input_path(year, day));
+            if solvers.is_empty() {
+                anyhow::bail!("No matching solvers found for filters.");
+            }
 
-            println!("{}: {}", "Year".bold().green(), year.value());
-            println!("{}: {}", "Day".bold().green(), day.value());
-            println!("{}: {}", "Input".bold().green(), input_path.display());
-            println!();
+            println!("{}: {}", "Matched solvers".bold().green(), solvers.len());
 
-            let input = std::fs::read_to_string(input_path)?;
+            let mut succeeded = 0usize;
+            let mut failed = 0usize;
+            let mut skipped = 0usize;
+            let mut missing_inputs: Vec<(u16, u8, PathBuf)> = Vec::new();
 
-            let mut spinner = Spinner::new(spinners::Spinners::Dots9, "Solving ...".into());
+            let mut total_solve_duration = std::time::Duration::from_secs(0);
+            // Iterate by reference so `solvers` remains available for the final summary.
+            for solver_ref in &solvers {
+                let solver = *solver_ref; // &'static Solver
+                let input_path = expected_input_path_for_solver(solver);
 
-            let start_time = std::time::Instant::now();
-            let result = (solver.solver)(&input);
-            let elapsed = start_time.elapsed().human_duration();
+                if !input_path.exists() {
+                    missing_inputs.push((solver.year, solver.day, input_path));
+                    skipped += 1;
+                    continue;
+                }
 
-            let success_symbol = "✔".green().to_string();
-            let failure_symbol = "✘".red().to_string();
+                println!("{}: {}", "Year".bold().green(), solver.year);
+                println!("{}: {}", "Day".bold().green(), solver.day);
+                println!("{}: {}", "Input".bold().green(), input_path.display());
+                println!();
 
-            let solution = result.inspect_err(|_| {
-                spinner
-                    .stop_and_persist(&failure_symbol, "An error occurred during solution.".into());
-            })?;
-            spinner.stop_and_persist(
-                &success_symbol,
-                format!("Solution found! Elapsed time: {}.", elapsed),
-            );
+                let input = match std::fs::read_to_string(&input_path) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        eprintln!("Failed to read input file: {}", e);
+                        failed += 1;
+                        continue;
+                    }
+                };
 
-            println!();
-            println!("{}\n{}", "Part one:".green().bold(), solution.part_one);
-            println!("{}\n{}", "Part two:".green().bold(), solution.part_two);
+                let mut spinner = Spinner::new(spinners::Spinners::Dots9, "Solving ...".into());
+
+                let start_time = std::time::Instant::now();
+                let result = (solver.solver)(&input);
+                let duration = start_time.elapsed();
+                total_solve_duration += duration;
+                let elapsed = duration.human_duration();
+
+                let success_symbol = "✔".green().to_string();
+                let failure_symbol = "✘".red().to_string();
+
+                match result {
+                    Ok(solution) => {
+                        spinner.stop_and_persist(
+                            &success_symbol,
+                            format!("Solution found! Elapsed time: {}.", elapsed),
+                        );
+                        println!();
+                        println!("{}\n{}", "Part one:".green().bold(), solution.part_one);
+                        println!("{}\n{}", "Part two:".green().bold(), solution.part_two);
+                        succeeded += 1;
+                    }
+                    Err(err) => {
+                        spinner.stop_and_persist(
+                            &failure_symbol,
+                            "An error occurred during solution.".into(),
+                        );
+                        eprintln!(
+                            "Solver error for year {} day {}: {}",
+                            solver.year, solver.day, err
+                        );
+                        failed += 1;
+                    }
+                }
+
+                println!();
+            }
+
+            let total_elapsed = total_solve_duration.human_duration();
+
+            println!("===== Summary =====");
+            println!("Total matched: {}", solvers.len());
+            println!("Succeeded: {}", succeeded);
+            println!("Failed: {}", failed);
+            println!("Skipped (missing input): {}", skipped);
+            println!("Total solve time: {}", total_elapsed);
+
+            if !missing_inputs.is_empty() {
+                println!("\nMissing inputs report:");
+                for (y, d, path) in missing_inputs {
+                    println!("- Year {} Day {} -> {}", y, d, path.display());
+                }
+            }
 
             Ok(())
         }
@@ -101,6 +174,17 @@ fn main() -> anyhow::Result<()> {
             std::fs::create_dir_all(&input_dir)?;
             std::fs::write(&input_file, content)?;
 
+            Ok(())
+        }
+        Commands::List { year, day } => {
+            let solvers = collect_solvers(year, day);
+            if solvers.is_empty() {
+                anyhow::bail!("No matching solvers found for filters.");
+            }
+            println!("Matched solvers ({}):", solvers.len());
+            for s in &solvers {
+                println!("- {}", solver_display_id(s));
+            }
             Ok(())
         }
     }
