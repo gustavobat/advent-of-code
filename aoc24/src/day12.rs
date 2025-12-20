@@ -45,14 +45,14 @@ fn traverse_region(grid: &Grid<char>, start: (usize, usize)) -> Region {
     let mut queue = VecDeque::new();
 
     let mut internal_edges = 0;
-    let cur_plant = *grid.get(start).expect("Coordinate should exist");
+    let cur_plant = grid[start];
 
     queue.push_back(start);
 
     while let Some(pos) = queue.pop_front() {
         let directions = Direction::cardinals();
         let neighbors = grid.get_neighbors(pos, &directions).filter(|n| {
-            let neigh_plant = *grid.get(*n).expect("Coordinate should exist");
+            let neigh_plant = grid[*n];
             neigh_plant == cur_plant
         });
 

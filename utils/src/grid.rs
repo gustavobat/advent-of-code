@@ -6,67 +6,67 @@ use std::ops::Index;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Coord(pub i32, pub i32);
+pub struct GridVector(pub i32, pub i32);
 
-impl Coord {
-    pub fn row(&self) -> i32 {
+impl GridVector {
+    pub fn x(&self) -> i32 {
         self.0
     }
 
-    pub fn col(&self) -> i32 {
+    pub fn y(&self) -> i32 {
         self.1
     }
 }
 
-impl std::ops::Add for Coord {
-    type Output = Coord;
-    fn add(self, other: Coord) -> Self::Output {
-        Coord(self.0 + other.0, self.1 + other.1)
+impl std::ops::Add for GridVector {
+    type Output = GridVector;
+    fn add(self, other: GridVector) -> Self::Output {
+        GridVector(self.0 + other.0, self.1 + other.1)
     }
 }
 
-impl std::ops::AddAssign for Coord {
-    fn add_assign(&mut self, other: Coord) {
+impl std::ops::AddAssign for GridVector {
+    fn add_assign(&mut self, other: GridVector) {
         *self = *self + other;
     }
 }
 
-impl std::ops::Sub for Coord {
-    type Output = Coord;
-    fn sub(self, other: Coord) -> Self::Output {
-        Coord(self.0 - other.0, self.1 - other.1)
+impl std::ops::Sub for GridVector {
+    type Output = GridVector;
+    fn sub(self, other: GridVector) -> Self::Output {
+        GridVector(self.0 - other.0, self.1 - other.1)
     }
 }
 
-impl std::ops::SubAssign for Coord {
-    fn sub_assign(&mut self, other: Coord) {
+impl std::ops::SubAssign for GridVector {
+    fn sub_assign(&mut self, other: GridVector) {
         *self = *self - other;
     }
 }
 
-impl std::ops::Neg for Coord {
-    type Output = Coord;
+impl std::ops::Neg for GridVector {
+    type Output = GridVector;
     fn neg(self) -> Self::Output {
-        Coord(-self.0, -self.1)
+        GridVector(-self.0, -self.1)
     }
 }
 
-impl std::ops::Mul<i32> for Coord {
-    type Output = Coord;
+impl std::ops::Mul<i32> for GridVector {
+    type Output = GridVector;
     fn mul(self, other: i32) -> Self::Output {
-        Coord(self.0 * other, self.1 * other)
+        GridVector(self.0 * other, self.1 * other)
     }
 }
 
-impl Display for Coord {
+impl Display for GridVector {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}, {})", self.0, self.1)
     }
 }
 
-impl TryFrom<Coord> for (usize, usize) {
+impl TryFrom<GridVector> for (usize, usize) {
     type Error = anyhow::Error;
-    fn try_from(value: Coord) -> Result<Self, Self::Error> {
+    fn try_from(value: GridVector) -> Result<Self, Self::Error> {
         if value.0 < 0 || value.1 < 0 {
             return Err(anyhow!("Negative coordinate cannot be converted to usize"));
         }
@@ -74,9 +74,9 @@ impl TryFrom<Coord> for (usize, usize) {
     }
 }
 
-impl From<(usize, usize)> for Coord {
+impl From<(usize, usize)> for GridVector {
     fn from(value: (usize, usize)) -> Self {
-        Coord(value.0 as i32, value.1 as i32)
+        GridVector(value.0 as i32, value.1 as i32)
     }
 }
 
@@ -124,16 +124,16 @@ impl Direction {
         ]
     }
 
-    pub fn as_coord_delta(&self) -> Coord {
+    pub fn as_grid_vector(&self) -> GridVector {
         match self {
-            Direction::Up => Coord(-1, 0),
-            Direction::Down => Coord(1, 0),
-            Direction::Left => Coord(0, -1),
-            Direction::Right => Coord(0, 1),
-            Direction::UpLeft => Coord(-1, -1),
-            Direction::UpRight => Coord(-1, 1),
-            Direction::DownLeft => Coord(1, -1),
-            Direction::DownRight => Coord(1, 1),
+            Direction::Up => GridVector(-1, 0),
+            Direction::Down => GridVector(1, 0),
+            Direction::Left => GridVector(0, -1),
+            Direction::Right => GridVector(0, 1),
+            Direction::UpLeft => GridVector(-1, -1),
+            Direction::UpRight => GridVector(-1, 1),
+            Direction::DownLeft => GridVector(1, -1),
+            Direction::DownRight => GridVector(1, 1),
         }
     }
 
@@ -146,10 +146,11 @@ impl Direction {
             _ => unimplemented!(),
         }
     }
+}
 
-    pub fn apply_to_coord(&self, coord: Coord) -> Coord {
-        coord + self.as_coord_delta()
-    }
+pub struct Entry<'a, T> {
+    pub pos: (usize, usize),
+    pub value: &'a T,
 }
 
 pub struct Grid<T> {
@@ -185,20 +186,23 @@ impl<T> Grid<T> {
         &self,
         start: (usize, usize),
         direction: Direction,
-    ) -> impl Iterator<Item = &T> {
-        let Coord(dr, dc) = direction.as_coord_delta();
+    ) -> impl Iterator<Item = Entry<'_, T>> {
+        let GridVector(dr, dc) = direction.as_grid_vector();
         let (row, col) = start;
         let mut r = row as i32;
         let mut c = col as i32;
         std::iter::from_fn(move || {
-            let res = self.get((r as usize, c as usize));
+            let entry = self.get((r as usize, c as usize)).map(|v| Entry {
+                pos: (r as usize, c as usize),
+                value: v,
+            });
             r += dr;
             c += dc;
-            res
+            entry
         })
     }
 
-    pub fn iter_flat_indices(&self) -> impl Iterator<Item = (usize, usize)> + use<'_, T> {
+    pub fn iter_flat_indices(&self) -> impl Iterator<Item = (usize, usize)> {
         (0..self.rows()).flat_map(move |row| (0..self.cols()).map(move |col| (row, col)))
     }
 
@@ -217,7 +221,7 @@ impl<T> Grid<T> {
         directions: &[Direction],
     ) -> impl Iterator<Item = (usize, usize)> {
         directions.iter().filter_map(move |dir| {
-            let Coord(dr, dc) = dir.as_coord_delta();
+            let GridVector(dr, dc) = dir.as_grid_vector();
             let new_row = index.0 as i32 + dr;
             let new_col = index.1 as i32 + dc;
             if new_row >= 0 && new_col >= 0 {
@@ -246,7 +250,7 @@ impl<T> Grid<T> {
     pub fn get_relative_cells(
         &self,
         reference: (usize, usize),
-        offsets: &[Coord],
+        offsets: &[GridVector],
     ) -> impl Iterator<Item = (usize, usize)> {
         offsets.iter().filter_map(move |offset| {
             let new_row = reference.0 as i32 + offset.0;
@@ -329,8 +333,8 @@ where
     }
 }
 
-impl Index<(usize, usize)> for Grid<char> {
-    type Output = char;
+impl<T> Index<(usize, usize)> for Grid<T> {
+    type Output = T;
 
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         &self.data[index.0][index.1]

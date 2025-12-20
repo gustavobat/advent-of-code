@@ -2,8 +2,8 @@ use anyhow::Result;
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use utils::grid::Coord;
 use utils::grid::Grid;
+use utils::grid::GridVector;
 use utils::solution::Solution;
 use utils::solution::Solver;
 
@@ -24,10 +24,10 @@ fn find_antennas(grid: &Grid<char>) -> HashMap<char, Vec<(usize, usize)>> {
 }
 
 fn iter_antinodes<'g>(
-    start: Coord,
-    delta: Coord,
+    start: GridVector,
+    delta: GridVector,
     city: &'g Grid<char>,
-) -> impl Iterator<Item = Coord> + 'g {
+) -> impl Iterator<Item = GridVector> + 'g {
     let mut next = start;
     std::iter::from_fn(move || {
         if next.try_into().is_ok_and(|idx| city.contains(idx)) {
@@ -44,7 +44,7 @@ fn calculate_antinodes(
     coords: &[(usize, usize)],
     city: &Grid<char>,
     resonate: bool,
-) -> HashSet<Coord> {
+) -> HashSet<GridVector> {
     let mut antinodes = HashSet::new();
     let pairs = coords.iter().combinations(2);
     for pair in pairs {

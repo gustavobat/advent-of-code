@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use utils::grid::Direction;
 use utils::grid::Grid;
+use utils::grid::GridVector;
 use utils::solution::Solution;
 use utils::solution::Solver;
 
@@ -31,7 +32,8 @@ fn analyze_guard_route(grid: &Grid<char>) -> Result<GuardRoute> {
 
     let mut cur_path = grid.iter_from_start_and_direction(cur_pos, cur_dir).skip(1);
     while let Some(next) = cur_path.next() {
-        if *next == '#' {
+        let value = next.value;
+        if *value == '#' {
             if turns.get(&cur_pos).is_some_and(|&dir| dir == cur_dir) {
                 return Ok(GuardRoute::InfiniteLoop);
             }
@@ -43,10 +45,10 @@ fn analyze_guard_route(grid: &Grid<char>) -> Result<GuardRoute> {
             cur_path = grid.iter_from_start_and_direction(cur_pos, cur_dir).skip(1);
             continue;
         }
-        if *next == '.' || *next == '^' {
+        if *value == '.' || *value == '^' {
             just_turned = false;
-            let cur_pos_coord = cur_pos.into();
-            cur_pos = cur_dir.apply_to_coord(cur_pos_coord).try_into()?;
+            let cur_pos_vector: GridVector = cur_pos.into();
+            cur_pos = (cur_pos_vector + cur_dir.as_grid_vector()).try_into()?;
             visited.insert(cur_pos);
         }
     }

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
-use utils::grid::Coord;
 use utils::grid::Direction;
 use utils::grid::Grid;
 use utils::solution::Solution;
@@ -11,27 +10,26 @@ inventory::submit! {
     Solver::new(2024, 10, solve_all)
 }
 
-fn breadth_first_search(grid: &Grid<u8>, start: (usize, usize)) -> HashMap<Coord, Vec<Coord>> {
-    let mut result: HashMap<Coord, Vec<Coord>> = HashMap::new();
+type TrailHead = HashMap<(usize, usize), Vec<(usize, usize)>>;
+
+fn breadth_first_search(grid: &Grid<u8>, start: (usize, usize)) -> TrailHead {
+    let mut result: HashMap<(usize, usize), Vec<(usize, usize)>> = HashMap::new();
     let mut queue = VecDeque::new();
 
     queue.push_back(start);
     while let Some(pos) = queue.pop_front() {
-        let cur_height = *grid.get(pos).expect("Coordinate should exist");
+        let cur_height = grid[pos];
 
         let directions = Direction::cardinals();
         let neighbors = grid.get_neighbors(pos, &directions).filter(|n| {
-            let neighbor_height = *grid.get(*n).expect("Coordinate should exist");
+            let neighbor_height = grid[*n];
             neighbor_height == cur_height + 1
         });
 
         for neighbor in neighbors {
-            let neighbor_height = *grid.get(neighbor).expect("Coordinate should exist");
+            let neighbor_height = grid[neighbor];
             if neighbor_height == 9 {
-                result
-                    .entry(start.into())
-                    .or_default()
-                    .push(neighbor.into());
+                result.entry(start).or_default().push(neighbor);
             }
             queue.push_back(neighbor);
         }
@@ -39,26 +37,26 @@ fn breadth_first_search(grid: &Grid<u8>, start: (usize, usize)) -> HashMap<Coord
     result
 }
 
-fn find_trailheads(grid: &Grid<u8>) -> Vec<HashMap<Coord, Vec<Coord>>> {
+fn find_trailheads(grid: &Grid<u8>) -> Vec<TrailHead> {
     grid.iter_flat_indices()
         .filter(|(r, c)| grid.get((*r, *c)) == Some(&0))
         .map(|pos| breadth_first_search(grid, pos))
         .collect()
 }
 
-fn solve_part_one(trailheads: &[HashMap<Coord, Vec<Coord>>]) -> usize {
+fn solve_part_one(trailheads: &[TrailHead]) -> usize {
     trailheads
         .iter()
         .flat_map(|trails| {
             trails.values().map(|trail| {
-                let unique_ends = HashSet::<Coord>::from_iter(trail.iter().copied());
+                let unique_ends = HashSet::<(usize, usize)>::from_iter(trail.iter().copied());
                 unique_ends.len()
             })
         })
         .sum()
 }
 
-fn solve_part_two(trailheads: &[HashMap<Coord, Vec<Coord>>]) -> usize {
+fn solve_part_two(trailheads: &[TrailHead]) -> usize {
     trailheads
         .iter()
         .flat_map(|trails| trails.values().map(|trail| trail.len()))

@@ -17,7 +17,7 @@ fn solve_part_one(grid: &Grid<char>) -> usize {
                 .filter(|&&dir| {
                     let yielded = grid
                         .iter_from_start_and_direction(coord, dir)
-                        .copied()
+                        .map(|entry| *entry.value)
                         .take(4)
                         .collect_array::<4>();
                     yielded.is_some_and(|arr| arr == ['X', 'M', 'A', 'S'])
