@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::fmt::Formatter;
+use std::ops::Index;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -325,5 +326,13 @@ where
         Self {
             data: self.data.clone(),
         }
+    }
+}
+
+impl Index<(usize, usize)> for Grid<char> {
+    type Output = char;
+
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        &self.data[index.0][index.1]
     }
 }
