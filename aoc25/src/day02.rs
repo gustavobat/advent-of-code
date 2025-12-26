@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use utils::solution::Solution;
 use utils::solution::Solver;
 
@@ -45,7 +46,7 @@ fn is_invalid_id(id: u64, max_repeats: Option<u64>) -> bool {
 
 fn solve_part_one(id_ranges: &[(u64, u64)]) -> u64 {
     id_ranges
-        .iter()
+        .par_iter()
         .flat_map(|&(start, end)| start..=end)
         .filter(|&id| is_invalid_id(id, Some(2)))
         .sum()
@@ -53,7 +54,7 @@ fn solve_part_one(id_ranges: &[(u64, u64)]) -> u64 {
 
 fn solve_part_two(id_ranges: &[(u64, u64)]) -> u64 {
     id_ranges
-        .iter()
+        .par_iter()
         .flat_map(|&(start, end)| start..=end)
         .filter(|&id| is_invalid_id(id, None))
         .sum()
