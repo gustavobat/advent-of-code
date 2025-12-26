@@ -3,8 +3,8 @@ use utils::solution::Solver;
 
 use anyhow::Result;
 use anyhow::anyhow;
+use hashbrown::HashSet;
 use std::cmp::Ordering;
-use std::collections::HashSet;
 use std::str::FromStr;
 
 inventory::submit! {

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use hashbrown::HashMap;
 use utils::solution::Solution;
 use utils::solution::Solver;
 

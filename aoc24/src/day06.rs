@@ -1,7 +1,7 @@
 use anyhow::Result;
 use anyhow::anyhow;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use hashbrown::HashMap;
+use hashbrown::HashSet;
 use utils::grid::Direction;
 use utils::grid::Grid;
 use utils::grid::GridVector;

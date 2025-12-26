@@ -1,6 +1,6 @@
 use anyhow::anyhow;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use hashbrown::HashMap;
+use hashbrown::HashSet;
 use utils::solution::Solution;
 use utils::solution::Solver;
 

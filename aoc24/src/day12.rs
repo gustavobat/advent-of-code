@@ -1,5 +1,5 @@
 use anyhow::Result;
-use std::collections::HashSet;
+use hashbrown::HashSet;
 use std::collections::VecDeque;
 use utils::grid::Direction;
 use utils::grid::Grid;
